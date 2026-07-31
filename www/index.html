@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#eef9f8">
+<title>Baitussalam · Prayer Times</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Naskh+Arabic:wght@400;600&display=swap">
+<style>
+:root{
+  --teal-50:#eef9f8;--teal-100:#d7f0ee;--teal-200:#b3e4e0;--teal-300:#7fd1cb;--teal-400:#42b8ae;
+  --teal-500:#1ea59a;--teal-600:#178f86;--teal-700:#14746d;--teal-800:#125b57;--teal-900:#0f4744;
+  --ink-900:#0b2523;--ink-700:#2b3e3d;--ink-500:#5b6b6a;--ink-300:#93a19f;--ink-100:#d8e2e1;
+  --white:#fff;--mist-50:#eef9f8;--mist-100:#e4f4f2;
+  --gold-500:#c9973e;--gold-100:#f6ead2;--red-500:#d9534f;--red-100:#fbe4e3;--green-500:#3f9142;
+  --bg-app:var(--mist-50);--bg-surface:var(--white);--bg-sunken:var(--mist-100);
+  --surface-card:var(--white);--surface-card-active:var(--teal-100);
+  --brand-primary:var(--teal-500);--brand-primary-hover:var(--teal-600);--brand-primary-active:var(--teal-700);
+  --text-heading:var(--ink-900);--text-body:var(--ink-700);--text-muted:var(--ink-500);--text-faint:var(--ink-300);
+  --text-on-brand:var(--white);--text-link:var(--teal-600);
+  --border-default:var(--ink-100);--border-strong:var(--teal-200);
+  --accent-gold:var(--gold-500);--state-danger:var(--red-500);--state-danger-bg:var(--red-100);
+  --shadow-card:0 1px 2px rgba(11,37,35,.04),0 4px 12px rgba(11,37,35,.05);
+  --shadow-raised:0 2px 4px rgba(15,71,68,.08),0 8px 24px rgba(15,71,68,.10);
+  --shadow-glow:0 8px 24px rgba(30,165,154,.28);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%}
+body{background:var(--bg-app);font-family:'Manrope',system-ui,-apple-system,sans-serif;color:var(--text-body);
+  -webkit-font-smoothing:antialiased;overscroll-behavior:none}
+a{color:var(--text-link);text-decoration:none}
+button{font-family:inherit}
+::-webkit-scrollbar{width:0;height:0}
+#app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;background:var(--bg-app);
+  padding-top:env(safe-area-inset-top)}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:8px 20px 10px;gap:10px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand-tile{width:38px;height:38px;border-radius:12px;background:var(--teal-100);color:var(--brand-primary);
+  display:flex;align-items:center;justify-content:center;flex:none}
+.brand-name{font-weight:800;font-size:17px;color:var(--text-heading);line-height:1.15}
+.brand-ar{font-family:'Noto Naskh Arabic',serif;font-size:13px;color:var(--text-muted);direction:rtl;line-height:1.3}
+.hdr-actions{display:flex;align-items:center;gap:8px;flex:none}
+.mute-pill{display:flex;align-items:center;gap:6px;border-radius:999px;padding:7px 11px;font-size:11.5px;
+  font-weight:700;cursor:pointer;min-height:34px;border:1.5px solid}
+.gear{width:34px;height:34px;border-radius:12px;border:1.5px solid var(--border-default);background:var(--white);
+  display:flex;align-items:center;justify-content:center;cursor:pointer}
+.datestrip{display:flex;align-items:center;justify-content:space-between;margin:0 20px 12px;padding:9px 14px;
+  background:var(--white);border:1.5px solid var(--border-default);border-radius:12px}
+.datestrip .g{font-weight:700;font-size:13px;color:var(--text-heading)}
+.datestrip .h{font-size:12px;font-weight:600;color:var(--brand-primary)}
+.scroll{flex:1;overflow-y:auto;padding:0 0 18px;-webkit-overflow-scrolling:touch}
+.gut{padding:0 20px}
+.seg{display:flex;gap:4px;padding:4px;background:var(--bg-sunken);border:1.5px solid var(--border-default);
+  border-radius:12px;margin-bottom:14px}
+.seg button{flex:1;min-height:36px;border:none;border-radius:9px;cursor:pointer;font-size:13px;font-weight:700}
+.hero{border-radius:28px;padding:32px 24px;background:linear-gradient(160deg,#42b8ae,#178f86);
+  box-shadow:var(--shadow-glow);color:#fff;text-align:center;margin-bottom:14px}
+.hero .clock{font-size:44px;font-weight:800;letter-spacing:-.02em;line-height:1}
+.hero .lbl{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;opacity:.85;margin-top:10px}
+.hero .rem{font-size:28px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+.card{background:var(--surface-card);border:1.5px solid var(--border-default);border-radius:18px;
+  box-shadow:var(--shadow-card);overflow:hidden}
+.thead{display:flex;align-items:center;padding:10px 14px;background:var(--bg-sunken);font-size:10px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border-default)}
+.trow{display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border-default)}
+.trow:last-child{border-bottom:none}
+.pname{width:75px;font-weight:700;font-size:15px;color:var(--brand-primary)}
+.tval{flex:1;font-size:14px;font-weight:500;color:var(--text-body)}
+.bell{width:34px;height:34px;border-radius:12px;border:none;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;position:relative}
+.notice{display:flex;align-items:center;gap:10px;background:var(--gold-100);border:1.5px solid #e8d3a8;
+  border-radius:14px;padding:12px 14px;margin-top:14px}
+.notice .t{font-size:12.5px;color:var(--text-body);line-height:1.4}
+.mhead{display:flex;align-items:center;padding:9px 12px;background:var(--bg-sunken);
+  border-bottom:1px solid var(--border-default);font-size:9.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--text-muted)}
+.mrow{display:flex;align-items:center;padding:9px 12px;border-bottom:1px solid var(--border-default)}
+.title{font-weight:800;font-size:20px;color:var(--text-heading)}
+.sub{font-size:12.5px;color:var(--text-muted)}
+.rcard{background:var(--surface-card);border:1.5px solid var(--border-default);border-radius:16px;
+  box-shadow:var(--shadow-card);padding:14px}
+.rowflex{display:flex;align-items:center;gap:12px}
+.sw{width:46px;height:26px;border-radius:999px;border:none;cursor:pointer;position:relative;flex:none;
+  transition:background .15s ease;background:var(--ink-100)}
+.sw.on{background:var(--brand-primary)}
+.sw .knob{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;
+  transition:transform .15s ease;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.sw.on .knob{transform:translateX(20px)}
+.lead{flex:1;min-height:34px;border-radius:10px;border:1.5px solid var(--border-default);background:#fff;
+  color:var(--text-muted);font-size:12px;font-weight:700;cursor:pointer}
+.lead.sel{border-color:var(--brand-primary);background:var(--teal-100);color:var(--teal-700)}
+.obtn{flex:1;min-height:38px;display:flex;align-items:center;justify-content:center;border-radius:11px;
+  border:1.5px solid var(--border-strong);background:#fff;color:var(--brand-primary);font-size:12.5px;font-weight:700}
+.tabbar{display:flex;justify-content:space-around;align-items:center;padding:10px 8px calc(16px + env(safe-area-inset-bottom));
+  background:var(--white);border-top:1px solid var(--border-default)}
+.tab{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer;
+  padding:4px 16px;min-height:44px;font-size:11px;font-weight:600;color:var(--text-faint)}
+.tab.on{color:var(--brand-primary)}
+.banner{margin:0 20px 12px;padding:8px 12px;border-radius:10px;font-size:11.5px;font-weight:600;text-align:center}
+.banner.warn{background:var(--gold-100);color:#8a6d2f;border:1px solid #e8d3a8}
+.banner.err{background:var(--state-danger-bg);color:var(--state-danger);border:1px solid #f0c9c7}
+.press:active{transform:scale(.97)}
+.divider{height:1px;background:var(--border-default);margin:12px 0}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="hdr">
+    <div class="brand">
+      <div class="brand-tile" id="brandIcon"></div>
+      <div style="min-width:0">
+        <div class="brand-name">Baitussalam</div>
+        <div class="brand-ar">بيت السلام</div>
+      </div>
+    </div>
+    <div class="hdr-actions">
+      <button class="mute-pill press" id="mutePill"></button>
+      <button class="gear press" id="gearBtn" aria-label="Settings"></button>
+    </div>
+  </div>
+  <div class="datestrip">
+    <div class="g" id="dateG">—</div>
+    <div class="h" id="dateH">—</div>
+  </div>
+  <div id="banner"></div>
+  <div class="scroll" id="scroll"></div>
+  <div class="tabbar" id="tabbar"></div>
+</div>
+
+<script>
+/* =====================================================================
+   Baitussalam Masjid — Prayer Times & Reminders
+   Erdington Islamic Foundation, 15 High St, Erdington, Birmingham B23 6RG
+   Self-contained web app. Also runs as the web root inside Capacitor,
+   where it schedules real native local notifications.
+   ===================================================================== */
+
+const MOSQUE = {
+  slug: 'erdington-islamic-foundation-birmingham-b23-6rg-united-kingdom',
+  url:  'https://mawaqit.net/en/m/erdington-islamic-foundation-birmingham-b23-6rg-united-kingdom',
+  name: 'Erdington Islamic Foundation',
+  address1: '15 High St, Erdington',
+  address2: 'Birmingham B23 6RG',
+  lat: 52.5236, lng: -1.8389,
+  phone: '01213735500',        // TODO: confirm with committee
+  email: 'info@erdingtonislamicfoundation.org', // TODO: confirm
+  bank: { name: 'Erdington Islamic Foundation', sort: '40-34-16', acc: '31644408' },
+  facilities: [
+    'Parking on site and on High Street',
+    'Wudhu facilities on ground floor',
+    "Sisters' prayer area, first floor",
+    'Step-free access from the main entrance'
+  ],
+  madrasah: 'Monday to Thursday, 5:00 PM – 7:00 PM. Boys and girls, ages 5–14. Enrolment at the office.'
+};
+
+/* ---------- tiny SVG icons (Lucide-style, currentColor) ---------- */
+const ICON = {
+  mosque:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c1.5 2 3 3 3 5a3 3 0 0 1-6 0c0-2 1.5-3 3-5Z"/><path d="M4 22V11c0-1.5 1-2.5 2.5-3M20 22V11c0-1.5-1-2.5-2.5-3"/><path d="M4 22h16"/><path d="M8 22v-4a4 4 0 0 1 8 0v4"/></svg>',
+  bell:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>',
+  gear:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.14.63.65 1.11 1.29 1.24"/></svg>',
+  clock:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  home:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2h-4v-6H9v6H5a2 2 0 0 1-2-2Z"/></svg>',
+  bellTab:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>',
+  mosqueTab:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c1.5 2 3 3 3 5a3 3 0 0 1-6 0c0-2 1.5-3 3-5Z"/><path d="M4 22V11c0-1.5 1-2.5 2.5-3M20 22V11c0-1.5-1-2.5-2.5-3"/><path d="M4 22h16"/><path d="M8 22v-4a4 4 0 0 1 8 0v4"/></svg>',
+  pin:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
+  chev:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>'
+};
+
+/* ---------- persistence ---------- */
+const LS = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v==null?d:JSON.parse(v);}catch(e){return d;} },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+
+const DEFAULT_SETTINGS = {
+  notifOn:true, muted:{},
+  leads:{ fajr:15, dhuhr:10, asr:10, maghrib:5, isha:10 },
+  is24:false, showSunrise:true, adhanSound:true,
+  silentNudge:true, autoSilence:false, janazahOn:true
+};
+
+let settings = Object.assign({}, DEFAULT_SETTINGS, LS.get('bs_settings', {}));
+settings.muted = settings.muted || {};
+settings.leads = Object.assign({}, DEFAULT_SETTINGS.leads, settings.leads||{});
+
+function saveSettings(){ LS.set('bs_settings', settings); }
+
+let ui = { screen:'times', timesView:'today', copied:false };
+let timetable = LS.get('bs_timetable', null);   // normalized cached calendar
+let syncState = timetable ? 'cache' : 'loading'; // loading | cache | live | error | estimate
+
+/* ---------- time helpers ---------- */
+const PRAYER_KEYS = ['fajr','dhuhr','asr','maghrib','isha'];
+const NAME = { fajr:'Fajr', shurooq:'Shurooq', dhuhr:'Dhuhr', asr:'Asr', maghrib:'Maghrib', isha:'Isha' };
+
+function hmToMin(s){
+  if(s==null) return null;
+  const m = String(s).trim().match(/^(\d{1,2}):(\d{2})/);
+  if(!m) return null;
+  return (+m[1])*60 + (+m[2]);
+}
+function fmt(mins, force){
+  if(mins==null) return '—';
+  mins = ((Math.round(mins)%1440)+1440)%1440;
+  const h = Math.floor(mins/60), m = mins%60, mm = String(m).padStart(2,'0');
+  if(settings.is24 || force===24) return String(h).padStart(2,'0')+':'+mm;
+  const ap = h>=12?'PM':'AM', h12 = h%12===0?12:h%12;
+  return h12+':'+mm+' '+ap;
+}
+function pad(n){ return String(n).padStart(2,'0'); }
+
+/* ---------- Mawaqit fetch + parse ---------- */
+// Extract the confData object from the mosque page HTML with brace matching.
+function extractConfData(html){
+  const idx = html.indexOf('confData');
+  if(idx<0) throw new Error('confData not found in page');
+  const braceStart = html.indexOf('{', idx);
+  if(braceStart<0) throw new Error('confData opening brace not found');
+  let depth=0, inStr=false, esc=false, q='';
+  for(let i=braceStart;i<html.length;i++){
+    const c = html[i];
+    if(inStr){
+      if(esc){ esc=false; }
+      else if(c==='\\'){ esc=true; }
+      else if(c===q){ inStr=false; }
+    } else {
+      if(c==='"'||c==="'"){ inStr=true; q=c; }
+      else if(c==='{'){ depth++; }
+      else if(c==='}'){ depth--; if(depth===0){ return html.slice(braceStart, i+1); } }
+    }
+  }
+  throw new Error('confData not balanced');
+}
+
+async function fetchPage(url){
+  // Native (Capacitor) — bypasses browser CORS.
+  const CapHttp = (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.CapacitorHttp)
+                || window.CapacitorHttp;
+  if(CapHttp){
+    const res = await CapHttp.get({ url, headers:{'User-Agent':'BaitussalamApp'} });
+    return typeof res.data === 'string' ? res.data : JSON.stringify(res.data);
+  }
+  // Browser — try direct, then a public CORS proxy as a best-effort fallback.
+  try{
+    const r = await fetch(url, { mode:'cors' });
+    if(r.ok) return await r.text();
+    throw new Error('status '+r.status);
+  }catch(e){
+    const r = await fetch('https://corsproxy.io/?url=' + encodeURIComponent(url));
+    return await r.text();
+  }
+}
+
+// Normalize confData -> { year, months:[{day:{fajr,shuruq,dhuhr,asr,maghrib,isha (adhan mins), iq:{...}}}],
+//                          jumua, jumua2, fetchedAt }
+function normalize(conf){
+  const year = new Date().getFullYear();
+  const cal = conf.calendar || [];        // 12 months; each: { "1":[f,sh,dh,asr,mag,isha], ... }
+  const iqCal = conf.iqamaCalendar || []; // 12 months; each: { "1":[f,dh,asr,mag,isha], ... } offsets or times
+  const iqDefault = conf.iqama || [];     // 5 default offsets/times
+  const months = [];
+  for(let mo=0; mo<12; mo++){
+    const dayMap = {};
+    const src = cal[mo] || {};
+    const iqSrc = iqCal[mo] || {};
+    Object.keys(src).forEach(dk=>{
+      const a = src[dk]; // [fajr, shuruq, dhuhr, asr, maghrib, isha]
+      if(!Array.isArray(a) || a.length<6) return;
+      const adhan = { fajr:hmToMin(a[0]), shurooq:hmToMin(a[1]), dhuhr:hmToMin(a[2]),
+                      asr:hmToMin(a[3]), maghrib:hmToMin(a[4]), isha:hmToMin(a[5]) };
+      const iqArr = (iqSrc[dk] && iqSrc[dk].length>=5) ? iqSrc[dk] : iqDefault;
+      const iq = {};
+      PRAYER_KEYS.forEach((k,i)=>{ iq[k] = resolveIqama(iqArr[i], adhan[k]); });
+      dayMap[dk] = { adhan, iq };
+    });
+    months.push(dayMap);
+  }
+  return {
+    year, months,
+    jumua: conf.jumua || null,
+    jumua2: conf.jumua2 || null,
+    fetchedAt: Date.now()
+  };
+}
+// iqama value can be "+10" (offset), "13:30" (fixed clock), or 10 (number offset)
+function resolveIqama(val, adhanMin){
+  if(val==null || adhanMin==null) return adhanMin;
+  const s = String(val).trim();
+  if(s.indexOf(':')>=0) return hmToMin(s);
+  const off = parseInt(s.replace('+',''),10);
+  if(isNaN(off)) return adhanMin;
+  return adhanMin + off;
+}
+
+async function syncTimetable(force){
+  // Don't hammer Mawaqit: refresh at most once per ~12h unless forced.
+  if(!force && timetable && (Date.now()-timetable.fetchedAt) < 12*3600*1000){
+    return;
+  }
+  try{
+    const html = await fetchPage(MOSQUE.url);
+    const conf = JSON.parse(extractConfData(html));
+    const norm = normalize(conf);
+    // sanity: must have at least today's data
+    const t = dayEntryFrom(norm, new Date());
+    if(!t) throw new Error('no data for today after parse');
+    timetable = norm;
+    LS.set('bs_timetable', timetable);
+    syncState = 'live';
+    setBanner();
+    render();
+    scheduleNotifications();
+  }catch(err){
+    console.warn('Mawaqit sync failed:', err);
+    if(!timetable){ syncState='error'; setBanner(); render(); }
+    else { /* keep serving cache silently */ if(syncState==='loading'){syncState='cache';} setBanner(); }
+  }
+}
+
+function dayEntryFrom(tt, date){
+  if(!tt) return null;
+  const mo = date.getMonth(), day = String(date.getDate());
+  const m = tt.months[mo];
+  return (m && m[day]) ? m[day] : null;
+}
+
+/* ---------- fallback estimate (only if never synced & offline) ----------
+   Clearly labelled as estimated. Real times come from Mawaqit on first
+   online launch, then cached for the whole year. */
+const EST_BASE = { fajr:3*60+35, shurooq:5*60+29, dhuhr:13*60+15, asr:18*60+30, maghrib:21*60+2, isha:22*60+30 };
+const EST_IQ   = { fajr:30, dhuhr:15, asr:15, maghrib:5, isha:15 };
+function estimateEntry(){
+  const adhan={}, iq={};
+  Object.keys(EST_BASE).forEach(k=>adhan[k]=EST_BASE[k]);
+  PRAYER_KEYS.forEach(k=> iq[k]=EST_BASE[k]+EST_IQ[k]);
+  return { adhan, iq, estimate:true };
+}
+
+/* ---------- resolve today's rows ---------- */
+function getDay(date){
+  let e = dayEntryFrom(timetable, date);
+  if(e) return e;
+  // fall back to estimate
+  syncState = (syncState==='live'||syncState==='cache') ? syncState : 'estimate';
+  return estimateEntry();
+}
+
+function todayRows(date){
+  const e = getDay(date);
+  const isFri = date.getDay()===5;
+  const rows = [
+    { key:'fajr',    name:'Fajr',    adhan:e.adhan.fajr,    iqamah:e.iq.fajr },
+    { key:'shurooq', name:'Shurooq', adhan:e.adhan.shurooq, iqamah:null, noAlert:true },
+    { key:'dhuhr',   name:'Dhuhr',   adhan:e.adhan.dhuhr,   iqamah:e.iq.dhuhr },
+    { key:'asr',     name:'Asr',     adhan:e.adhan.asr,     iqamah:e.iq.asr },
+    { key:'maghrib', name:'Maghrib', adhan:e.adhan.maghrib, iqamah:e.iq.maghrib },
+    { key:'isha',    name:'Isha',    adhan:e.adhan.isha,    iqamah:e.iq.isha }
+  ];
+  if(isFri){
+    const jumuaAdhan = hmToMin(timetable && timetable.jumua) ?? (13*60+15);
+    const jumua2 = hmToMin(timetable && timetable.jumua2);
+    const idx = rows.findIndex(r=>r.key==='dhuhr');
+    rows[idx] = { key:'dhuhr', name:"Jumu'ah", adhan:jumuaAdhan,
+                  iqamah:(jumua2 ?? (jumuaAdhan+30)), isFri:true };
+  }
+  return rows;
+}
+
+/* ---------- Hijri date (approx civil calc from Julian Day) ---------- */
+function hijriFromJD(jd){
+  jd=Math.floor(jd)+0.5|0; jd=Math.floor(jd);
+  let l = jd - 1948440 + 10632;
+  let n = Math.floor((l - 1) / 10631);
+  l = l - 10631 * n + 354;
+  let j = (Math.floor((10985 - l) / 5316)) * (Math.floor((50 * l) / 17719)) +
+          (Math.floor(l / 5670)) * (Math.floor((43 * l) / 15238));
+  l = l - (Math.floor((30 - j) / 15)) * (Math.floor((17719 * j) / 50)) -
+      (Math.floor(j / 16)) * (Math.floor((15238 * j) / 43)) + 29;
+  const m = Math.floor((24 * l) / 709);
+  const d = l - Math.floor((709 * m) / 24);
+  const y = 30 * n + j - 30;
+  const months = ['Muharram','Safar','Rabi al-Awwal','Rabi al-Thani','Jumada al-Ula','Jumada al-Akhira',
+                  'Rajab','Shaban','Ramadan','Shawwal','Dhu al-Qadah','Dhu al-Hijjah'];
+  return d + ' ' + (months[m-1]||'') + ' ' + y;
+}
+
+/* ===================== RENDER ===================== */
+const $ = s=>document.querySelector(s);
+function el(html){ const t=document.createElement('template'); t.innerHTML=html.trim(); return t.content.firstChild; }
+
+function setBanner(){
+  const b = $('#banner');
+  if(!b) return;
+  if(syncState==='error'){
+    b.innerHTML = '<div class="banner err">Couldn\'t load times. Connect to the internet once to sync.</div>';
+  } else if(syncState==='estimate'){
+    b.innerHTML = '<div class="banner warn">Estimated times — open with internet to sync exact masjid times.</div>';
+  } else if(syncState==='cache'){
+    b.innerHTML = '<div class="banner warn">Showing saved times.</div>';
+  } else {
+    b.innerHTML = '';
+  }
+}
+
+function computeNext(date, rows){
+  const nowMins = date.getHours()*60 + date.getMinutes() + date.getSeconds()/60;
+  const timed = rows.filter(r=>!r.noAlert);
+  let next = timed.find(r=> r.adhan!=null && r.adhan>nowMins);
+  const target = new Date(date);
+  if(next){ target.setHours(Math.floor(next.adhan/60), next.adhan%60, 0, 0); }
+  else { next = timed[0]; target.setDate(target.getDate()+1); target.setHours(Math.floor(next.adhan/60), next.adhan%60,0,0); }
+  const diff = Math.max(0, Math.floor((target-date)/1000));
+  const remaining = pad(Math.floor(diff/3600))+':'+pad(Math.floor(diff/60)%60)+':'+pad(diff%60);
+  let currentKey=null;
+  timed.forEach(r=>{ if(r.adhan!=null && r.adhan<=nowMins) currentKey=r.key; });
+  return { next, remaining, currentKey };
+}
+
+function isOn(k){ return settings.notifOn && !settings.muted[k]; }
+
+let lastCurrentKey = '__init__';
+
+function render(){
+  const now = new Date();
+  // header icons
+  $('#brandIcon').innerHTML = ICON.mosque;
+  $('#gearBtn').innerHTML = ICON.gear;
+  $('#gearBtn').style.color = ui.screen==='settings' ? 'var(--brand-primary)' : 'var(--text-muted)';
+  // mute pill
+  const on = settings.notifOn;
+  const pill = $('#mutePill');
+  pill.style.borderColor = on ? 'var(--border-strong)' : '#f0c9c7';
+  pill.style.background  = on ? 'var(--teal-100)' : 'var(--state-danger-bg)';
+  pill.style.color       = on ? 'var(--teal-700)' : 'var(--state-danger)';
+  pill.innerHTML = ICON.bell + '<span>'+(on?'Alerts on':'All muted')+'</span>';
+  // date strip
+  $('#dateG').textContent = now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+  $('#dateH').textContent = hijriFromJD(toJD(now));
+  setBanner();
+
+  const scroll = $('#scroll');
+  scroll.innerHTML='';
+  if(ui.screen==='times') scroll.appendChild(renderTimes(now));
+  else if(ui.screen==='alerts') scroll.appendChild(renderAlerts(now));
+  else if(ui.screen==='mosque') scroll.appendChild(renderMosque());
+  else if(ui.screen==='settings') scroll.appendChild(renderSettings());
+
+  renderTabbar();
+  wire();
+}
+function toJD(d){
+  let day=d.getDate(), m=d.getMonth()+1, y=d.getFullYear();
+  if(m<3){ y-=1; m+=12; }
+  const a=Math.floor(y/100), b=2-a+Math.floor(a/4);
+  return Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+day+b-1524;
+}
+
+function renderTabbar(){
+  const tabs=[['times','Times',ICON.home],['alerts','Reminders',ICON.bellTab],['mosque','Mosque',ICON.mosqueTab]];
+  const bar=$('#tabbar'); bar.innerHTML='';
+  tabs.forEach(([k,label,icon])=>{
+    const b=el('<button class="tab '+((ui.screen===k||(k==='times'&&ui.screen==='settings'))?'on':'')+'">'+icon+'<span>'+label+'</span></button>');
+    b.onclick=()=>{ ui.screen=k; if(k==='times')ui.timesView=ui.timesView; render(); };
+    bar.appendChild(b);
+  });
+}
+
+function renderTimes(now){
+  const wrap = el('<div></div>');
+  // segmented control
+  const gut = el('<div class="gut"></div>');
+  const seg = el('<div class="seg"></div>');
+  [['today','Today'],['month','Month']].forEach(([k,label])=>{
+    const sel = ui.timesView===k;
+    const b=el('<button style="background:'+(sel?'var(--white)':'transparent')+';color:'+(sel?'var(--teal-700)':'var(--text-muted)')+';box-shadow:'+(sel?'var(--shadow-card)':'none')+'">'+label+'</button>');
+    b.onclick=()=>{ ui.timesView=k; render(); };
+    seg.appendChild(b);
+  });
+  gut.appendChild(seg); wrap.appendChild(gut);
+
+  if(ui.timesView==='today') wrap.appendChild(renderToday(now));
+  else wrap.appendChild(renderMonth(now));
+  return wrap;
+}
+
+function renderToday(now){
+  const rows = todayRows(now);
+  const list = rows.filter(r=> r.key!=='shurooq' || settings.showSunrise);
+  const { next, remaining, currentKey } = computeNext(now, rows);
+  lastCurrentKey = currentKey;
+
+  const c = el('<div class="gut"></div>');
+  // hero
+  c.appendChild(el(
+    '<div class="hero"><div class="clock" id="heroClock">'+fmt(now.getHours()*60+now.getMinutes())+'</div>'+
+    '<div class="lbl">Next prayer: '+(next?next.name:'—')+'</div>'+
+    '<div class="rem" id="heroRem">'+remaining+'</div></div>'
+  ));
+
+  // prayer table
+  const card = el('<div class="card"></div>');
+  card.appendChild(el('<div class="thead"><div style="width:78px">Prayer</div><div style="flex:1">Adhan</div><div style="flex:1">Iqamah</div><div style="width:34px;text-align:right">Alert</div></div>'));
+  list.forEach(p=>{
+    const active = p.key===currentKey;
+    const alertOn = !p.noAlert && isOn(p.key);
+    const row = el('<div class="trow" style="background:'+(active?'var(--surface-card-active)':'transparent')+';border-left:3px solid '+(active?'var(--brand-primary)':'transparent')+'"></div>');
+    row.appendChild(el('<div class="pname" style="width:75px;font-weight:'+(active?800:700)+';color:'+(active?'var(--text-heading)':'var(--brand-primary)')+'">'+p.name+'</div>'));
+    row.appendChild(el('<div class="tval">'+fmt(p.adhan)+'</div>'));
+    row.appendChild(el('<div class="tval">'+(p.iqamah!=null?fmt(p.iqamah):'—')+'</div>'));
+    if(p.noAlert){
+      row.appendChild(el('<div style="width:34px;height:34px"></div>'));
+    } else {
+      const b = el('<button class="bell press" aria-label="'+p.name+(alertOn?' alert on':' alert off')+'" style="background:'+(alertOn?'var(--brand-primary)':'var(--bg-sunken)')+';color:'+(alertOn?'var(--white)':'var(--text-faint)')+'">'+ICON.bell+
+        (alertOn?'':'<span style="position:absolute;width:20px;height:1.5px;background:var(--text-faint);transform:rotate(-45deg);border-radius:2px"></span>')+'</button>');
+      b.onclick=()=>{ settings.muted[p.key]=!settings.muted[p.key]; saveSettings(); scheduleNotifications(); render(); };
+      row.appendChild(b);
+    }
+    card.appendChild(row);
+  });
+  c.appendChild(card);
+
+  // Jumu'ah notice
+  const isFri = now.getDay()===5;
+  const noticeText = isFri
+    ? "Jumu'ah khutbah 1:15 PM · second jama'ah 2:00 PM"
+    : "Jumu'ah on Friday: khutbah 1:15 PM, jama'ah 1:45 PM";
+  const notice = el('<div class="notice"><div style="color:var(--accent-gold);display:flex;flex:none">'+ICON.clock+'</div><div class="t">'+noticeText+'</div></div>');
+  c.appendChild(notice);
+  return c;
+}
+
+function renderMonth(now){
+  const y=now.getFullYear(), mo=now.getMonth();
+  const daysInMonth=new Date(y,mo+1,0).getDate();
+  const dow=['Su','Mo','Tu','We','Th','Fr','Sa'];
+  const monthLabel = now.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  const c = el('<div class="gut"></div>');
+  c.appendChild(el('<div class="sub" style="margin-bottom:10px">'+monthLabel+' · Iqamah times. Adhan times are on Today.</div>'));
+  const card = el('<div class="card" style="border-radius:16px"></div>');
+  card.appendChild(el('<div class="mhead"><div style="width:40px">Day</div><div style="flex:1;text-align:center">Fajr</div><div style="flex:1;text-align:center">Dhuhr</div><div style="flex:1;text-align:center">Asr</div><div style="flex:1;text-align:center">Mag</div><div style="flex:1;text-align:center">Isha</div></div>'));
+  for(let d=1; d<=daysInMonth; d++){
+    const dt=new Date(y,mo,d);
+    const e=getDay(dt);
+    const isToday=d===now.getDate();
+    const fri=dt.getDay()===5;
+    const bg = isToday?'var(--surface-card-active)':(fri?'var(--gold-100)':'transparent');
+    const row=el('<div class="mrow" style="background:'+bg+'"></div>');
+    row.appendChild(el('<div style="width:40px;font-size:11.5px;font-weight:'+(isToday?800:600)+';color:'+(isToday?'var(--teal-700)':'var(--text-muted)')+'">'+d+' '+dow[dt.getDay()]+'</div>'));
+    ['fajr','dhuhr','asr','maghrib','isha'].forEach(k=>{
+      row.appendChild(el('<div style="flex:1;text-align:center;font-size:11.5px;font-weight:500;color:var(--text-body)">'+fmt(e.iq[k],24)+'</div>'));
+    });
+    card.appendChild(row);
+  }
+  c.appendChild(card);
+  return c;
+}
+
+function switchEl(checked, onChange, label){
+  const b=el('<button class="sw '+(checked?'on':'')+'" role="switch" aria-checked="'+checked+'" aria-label="'+(label||'')+'"><span class="knob"></span></button>');
+  b.onclick=()=>onChange(!checked);
+  return b;
+}
+
+function renderAlerts(now){
+  const rows = todayRows(now).filter(r=>!r.noAlert);
+  const c=el('<div class="gut"></div>');
+  c.appendChild(el('<div class="title" style="margin-bottom:4px">Reminders</div>'));
+  c.appendChild(el('<div class="sub" style="margin-bottom:14px">Choose how long before adhan you\'re notified.</div>'));
+
+  // all notifications
+  const allCard=el('<div class="rcard" style="margin-bottom:10px"></div>');
+  const allRow=el('<div class="rowflex"></div>');
+  allRow.appendChild(el('<div style="flex:1"><div style="font-weight:700;font-size:14.5px;color:var(--text-heading)">All notifications</div><div class="sub" style="margin-top:2px">'+(settings.notifOn?'Per-prayer settings below apply':'Everything is silenced')+'</div></div>'));
+  allRow.appendChild(switchEl(settings.notifOn, v=>{ settings.notifOn=v; saveSettings(); scheduleNotifications(); render(); }, 'All notifications'));
+  allCard.appendChild(allRow); c.appendChild(allCard);
+
+  // silent mode card
+  const sCard=el('<div class="rcard" style="margin-bottom:14px"></div>');
+  const s1=el('<div class="rowflex"></div>');
+  s1.appendChild(el('<div style="flex:1"><div style="font-weight:700;font-size:14.5px;color:var(--text-heading)">Silent mode reminder</div><div class="sub" style="margin-top:2px">A nudge to silence your phone before adhan</div></div>'));
+  s1.appendChild(switchEl(settings.silentNudge, v=>{ settings.silentNudge=v; saveSettings(); scheduleNotifications(); render(); }, 'Silent mode reminder'));
+  sCard.appendChild(s1);
+  sCard.appendChild(el('<div class="divider"></div>'));
+  const s2=el('<div class="rowflex"></div>');
+  s2.appendChild(el('<div style="flex:1"><div style="font-weight:700;font-size:14.5px;color:var(--text-heading)">Auto-silence phone</div><div class="sub" style="margin-top:2px">From adhan until 20 min after iqamah</div></div>'));
+  s2.appendChild(switchEl(settings.autoSilence, v=>{ settings.autoSilence=v; saveSettings(); render(); }, 'Auto-silence phone'));
+  sCard.appendChild(s2); c.appendChild(sCard);
+
+  // per-prayer
+  const listWrap=el('<div style="display:flex;flex-direction:column;gap:10px"></div>');
+  rows.forEach(p=>{
+    const on = isOn(p.key);
+    const lead = settings.leads[p.key];
+    const card=el('<div class="rcard" style="opacity:'+(settings.notifOn?1:0.5)+'"></div>');
+    const top=el('<div class="rowflex"></div>');
+    const leadHint = on ? (lead===0?'At adhan':lead+' min before') : 'Muted';
+    top.appendChild(el('<div style="flex:1"><div style="font-weight:700;font-size:15px;color:var(--text-heading)">'+p.name+'</div><div class="sub" style="margin-top:2px">Adhan '+fmt(p.adhan)+' · '+leadHint+'</div></div>'));
+    top.appendChild(switchEl(on, v=>{ settings.muted[p.key]=!v; saveSettings(); scheduleNotifications(); render(); }, p.name+' notifications'));
+    card.appendChild(top);
+    const chips=el('<div style="display:flex;gap:8px;margin-top:12px"></div>');
+    [[0,'On time'],[5,'5 min'],[10,'10 min'],[15,'15 min']].forEach(([v,label])=>{
+      const b=el('<button class="lead '+(lead===v?'sel':'')+'">'+label+'</button>');
+      b.onclick=()=>{ settings.leads[p.key]=v; saveSettings(); scheduleNotifications(); render(); };
+      chips.appendChild(b);
+    });
+    card.appendChild(chips);
+    listWrap.appendChild(card);
+  });
+  c.appendChild(listWrap);
+  return c;
+}
+
+function renderMosque(){
+  const c=el('<div class="gut" style="display:flex;flex-direction:column;gap:12px"></div>');
+  // location
+  const loc=el('<div class="rcard"></div>');
+  loc.appendChild(el('<div style="display:flex;align-items:flex-start;gap:12px"><div style="color:var(--brand-primary);display:flex;flex:none;margin-top:2px">'+ICON.pin+'</div><div style="flex:1"><div style="font-weight:700;font-size:14.5px;color:var(--text-heading)">'+MOSQUE.name+'</div><div class="sub" style="margin-top:3px;line-height:1.45">'+MOSQUE.address1+'<br>'+MOSQUE.address2+'</div></div></div>'));
+  loc.appendChild(el('<div style="display:flex;gap:8px;margin-top:12px">'+
+    '<a class="obtn" href="https://maps.google.com/?q=15+High+St+Erdington+Birmingham+B23+6RG" target="_blank" rel="noopener">Directions</a>'+
+    '<a class="obtn" href="tel:'+MOSQUE.phone+'">Call</a>'+
+    '<a class="obtn" href="mailto:'+MOSQUE.email+'">Email</a></div>'));
+  c.appendChild(loc);
+
+  // donation
+  const don=el('<div style="background:var(--gold-100);border:1.5px solid #e8d3a8;border-radius:16px;padding:14px"></div>');
+  don.appendChild(el('<div style="font-weight:800;font-size:15px;color:var(--text-heading)">Basement renovation appeal</div>'));
+  don.appendChild(el('<div style="font-size:12.5px;color:var(--text-body);margin-top:3px;line-height:1.45">Please donate for the basement renovation work.</div>'));
+  const box=el('<div style="margin-top:12px;background:#fff;border:1.5px solid #e8d3a8;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:7px"></div>');
+  [['Account name',MOSQUE.bank.name],['Sort code',MOSQUE.bank.sort],['Account number',MOSQUE.bank.acc]].forEach(([k,v])=>{
+    box.appendChild(el('<div style="display:flex;justify-content:space-between;font-size:12.5px"><span style="color:var(--text-muted)">'+k+'</span><span style="font-weight:700;color:var(--text-heading)">'+v+'</span></div>'));
+  });
+  don.appendChild(box);
+  const copyBtn=el('<button class="press" style="width:100%;min-height:40px;margin-top:10px;border:none;border-radius:12px;background:var(--accent-gold);color:#fff;font-size:13px;font-weight:700;cursor:pointer">'+(ui.copied?'Details copied':'Copy bank details')+'</button>');
+  copyBtn.onclick=()=>{
+    const txt=MOSQUE.bank.name+'\nSort Code: '+MOSQUE.bank.sort+'\nAccount Number: '+MOSQUE.bank.acc;
+    if(navigator.clipboard) navigator.clipboard.writeText(txt).catch(()=>{});
+    ui.copied=true; render(); setTimeout(()=>{ui.copied=false; if(ui.screen==='mosque')render();},2000);
+  };
+  don.appendChild(copyBtn);
+  c.appendChild(don);
+
+  // facilities
+  const fac=el('<div class="card" style="border-radius:16px"></div>');
+  fac.appendChild(el('<div style="padding:12px 14px;border-bottom:1px solid var(--border-default);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);background:var(--bg-sunken)">Facilities</div>'));
+  MOSQUE.facilities.forEach(f=>{
+    fac.appendChild(el('<div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--border-default)"><span style="width:6px;height:6px;border-radius:50%;background:var(--brand-primary);flex:none"></span><span style="font-size:13px;color:var(--text-body)">'+f+'</span></div>'));
+  });
+  c.appendChild(fac);
+
+  // madrasah
+  c.appendChild(el('<div class="rcard"><div style="font-weight:700;font-size:14.5px;color:var(--text-heading)">Madrasah</div><div class="sub" style="margin-top:3px;line-height:1.45">'+MOSQUE.madrasah+'</div></div>'));
+
+  // janazah
+  const jan=el('<div class="rcard"></div>');
+  const jr=el('<div class="rowflex" style="justify-content:space-between"></div>');
+  jr.appendChild(el('<div><div style="font-weight:700;font-size:14.5px;color:var(--text-heading)">Janazah announcements</div><div class="sub" style="margin-top:3px">'+(settings.janazahOn?'Notify me of janazah salah':'Notifications off')+'</div></div>'));
+  jr.appendChild(switchEl(settings.janazahOn, v=>{ settings.janazahOn=v; saveSettings(); render(); }, 'Janazah announcements'));
+  jan.appendChild(jr); c.appendChild(jan);
+
+  return c;
+}
+
+function renderSettings(){
+  const c=el('<div class="gut"></div>');
+  const head=el('<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"></div>');
+  const back=el('<button class="gear press" aria-label="Back" style="color:var(--brand-primary);transform:rotate(180deg)">'+ICON.chev+'</button>');
+  back.onclick=()=>{ ui.screen='times'; render(); };
+  head.appendChild(back);
+  head.appendChild(el('<div class="title">Settings</div>'));
+  c.appendChild(head);
+
+  const card=el('<div class="card" style="border-radius:16px;margin-bottom:14px"></div>');
+  const mk=(title,hint,checked,onChange,border)=>{
+    const r=el('<div class="rowflex" style="padding:14px;'+(border?'border-bottom:1px solid var(--border-default)':'')+'"></div>');
+    r.appendChild(el('<div style="flex:1"><div style="font-weight:700;font-size:14.5px;color:var(--text-heading)">'+title+'</div><div class="sub" style="margin-top:2px">'+hint+'</div></div>'));
+    r.appendChild(switchEl(checked,onChange,title));
+    return r;
+  };
+  card.appendChild(mk('24-hour time', settings.is24?'Times shown as 13:15':'Times shown as 1:15 PM', settings.is24, v=>{settings.is24=v;saveSettings();render();}, true));
+  card.appendChild(mk('Show Shurooq', "Sunrise row in today's list", settings.showSunrise, v=>{settings.showSunrise=v;saveSettings();render();}, true));
+  card.appendChild(mk('Adhan sound', 'Play full adhan instead of a chime', settings.adhanSound, v=>{settings.adhanSound=v;saveSettings();scheduleNotifications();render();}, false));
+  c.appendChild(card);
+
+  c.appendChild(el('<div style="font-size:11.5px;color:var(--text-faint);text-align:center;line-height:1.5">Times follow the mosque\'s published timetable.<br>Version 1.0</div>'));
+  return c;
+}
+
+function wire(){
+  $('#mutePill').onclick=()=>{ settings.notifOn=!settings.notifOn; saveSettings(); scheduleNotifications(); render(); };
+  $('#gearBtn').onclick=()=>{ ui.screen='settings'; render(); };
+}
+
+/* ---------- ticking (only updates hero, not full DOM) ---------- */
+function tick(){
+  const now=new Date();
+  const hc=$('#heroClock');
+  if(ui.screen==='times' && ui.timesView==='today' && hc){
+    const rows=todayRows(now);
+    const { remaining, currentKey } = computeNext(now, rows);
+    hc.textContent=fmt(now.getHours()*60+now.getMinutes());
+    const hr=$('#heroRem'); if(hr) hr.textContent=remaining;
+    if(currentKey!==lastCurrentKey) render(); // active row changed -> full refresh
+  }
+}
+
+/* ===================== NOTIFICATIONS ===================== */
+// Native local notifications via Capacitor when available; graceful web fallback.
+function capLN(){
+  return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications) || null;
+}
+async function ensureNotifPermission(){
+  const LN=capLN();
+  if(LN){
+    try{
+      let p=await LN.checkPermissions();
+      if(p.display!=='granted'){ p=await LN.requestPermissions(); }
+      // Android 8+: create a channel so sound works
+      if(LN.createChannel){
+        try{ await LN.createChannel({ id:'salah', name:'Salah reminders', importance:5,
+          description:'Prayer time reminders', sound: settings.adhanSound?'adhan.wav':undefined, visibility:1 }); }catch(e){}
+      }
+      return p.display==='granted';
+    }catch(e){ return false; }
+  }
+  if('Notification' in window && Notification.permission==='default'){
+    try{ await Notification.requestPermission(); }catch(e){}
+  }
+  return ('Notification' in window) && Notification.permission==='granted';
+}
+
+let webTimers=[];
+async function scheduleNotifications(){
+  // Build a rolling 7-day list of {when, title, body} for enabled prayers.
+  const items=buildSchedule(7);
+  const LN=capLN();
+  if(LN){
+    try{
+      const pending=await LN.getPending();
+      if(pending && pending.notifications && pending.notifications.length){
+        await LN.cancel({ notifications: pending.notifications.map(n=>({id:n.id})) });
+      }
+      const notifications=items.slice(0,60).map((it,i)=>({
+        id: i+1,
+        title: it.title,
+        body: it.body,
+        schedule:{ at: it.when, allowWhileIdle:true },
+        channelId:'salah',
+        sound: settings.adhanSound ? 'adhan.wav' : undefined,
+        smallIcon:'ic_stat_icon'
+      }));
+      if(notifications.length) await LN.schedule({ notifications });
+    }catch(e){ console.warn('schedule failed', e); }
+    return;
+  }
+  // Web fallback: setTimeout while the page is open (best-effort; real background
+  // notifications require the native build).
+  webTimers.forEach(t=>clearTimeout(t)); webTimers=[];
+  if(!('Notification' in window) || Notification.permission!=='granted') return;
+  const now=Date.now();
+  items.filter(it=> it.when.getTime()-now < 24*3600*1000).slice(0,30).forEach(it=>{
+    const delay=it.when.getTime()-now;
+    if(delay>0) webTimers.push(setTimeout(()=>{ try{ new Notification(it.title,{body:it.body}); }catch(e){} }, delay));
+  });
+}
+
+function buildSchedule(days){
+  const out=[];
+  if(!settings.notifOn) return out;
+  const base=new Date();
+  for(let dOff=0; dOff<days; dOff++){
+    const day=new Date(base); day.setDate(base.getDate()+dOff);
+    const rows=todayRows(day).filter(r=>!r.noAlert);
+    rows.forEach(r=>{
+      if(settings.muted[r.key]) return;
+      if(r.adhan==null) return;
+      const lead=settings.leads[r.key]||0;
+      const when=new Date(day); when.setHours(0,0,0,0);
+      when.setMinutes(r.adhan - lead);
+      if(when.getTime()<=Date.now()) return;
+      const body = lead===0 ? (r.name+' is now — '+fmt(r.adhan))
+                            : (r.name+' in '+lead+' min — adhan '+fmt(r.adhan));
+      out.push({ when, title:"Baitussalam · "+r.name, body });
+      // silent-mode nudge a couple minutes earlier
+      if(settings.silentNudge){
+        const nudge=new Date(when); nudge.setMinutes(nudge.getMinutes()-2);
+        if(nudge.getTime()>Date.now()){
+          out.push({ when:nudge, title:'Silence your phone', body:r.name+' adhan is near' });
+        }
+      }
+    });
+  }
+  out.sort((a,b)=>a.when-b.when);
+  return out;
+}
+
+/* ===================== BOOT ===================== */
+async function boot(){
+  render();
+  setInterval(tick, 1000);
+  await ensureNotifPermission();
+  // Show cache immediately, refresh in background.
+  if(timetable){ syncState='cache'; render(); scheduleNotifications(); }
+  syncTimetable(false);
+  // Re-sync + reschedule when app returns to foreground (handles DST/day change).
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ syncTimetable(false); scheduleNotifications(); render(); } });
+  if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App){
+    window.Capacitor.Plugins.App.addListener('resume', ()=>{ syncTimetable(false); scheduleNotifications(); render(); });
+  }
+  // Register the PWA service worker for offline (web build only).
+  if('serviceWorker' in navigator && !window.Capacitor){
+    try{ navigator.serviceWorker.register('sw.js'); }catch(e){}
+  }
+}
+boot();
+</script>
+</body>
+</html>

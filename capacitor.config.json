@@ -1,0 +1,15 @@
+{
+  "appId": "org.erdingtonislamicfoundation.baitussalam",
+  "appName": "Baitussalam",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_icon",
+      "iconColor": "#1ea59a",
+      "sound": "adhan.wav"
+    }
+  }
+}
