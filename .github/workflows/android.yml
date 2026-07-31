@@ -1,0 +1,51 @@
+name: Build Android APK
+
+# Build the app into an installable APK in the cloud (no local Android Studio needed).
+# Run it from the repo's "Actions" tab, then download the APK from the run's Artifacts.
+
+on:
+  workflow_dispatch:      # lets you run it manually from the Actions tab
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Set up Java (for Android/Gradle)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Add Android platform
+        run: npx cap add android || echo "android platform already present"
+
+      - name: Sync web assets into the native project
+        run: npx cap sync android
+
+      - name: Build debug APK
+        working-directory: android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: baitussalam-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
