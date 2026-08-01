@@ -62,21 +62,26 @@ button{font-family:inherit}
 .hero .rem{font-size:28px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
 .card{background:var(--surface-card);border:1.5px solid var(--border-default);border-radius:18px;
   box-shadow:var(--shadow-card);overflow:hidden}
-.thead{display:flex;align-items:center;padding:10px 14px;background:var(--bg-sunken);font-size:10px;font-weight:700;
-  letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border-default)}
-.trow{display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border-default)}
+.thead{display:grid;grid-template-columns:68px 1fr 1fr 34px;gap:8px;align-items:center;padding:10px 14px;
+  background:var(--bg-sunken);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--text-muted);border-bottom:1px solid var(--border-default)}
+.trow{display:grid;grid-template-columns:68px 1fr 1fr 34px;gap:8px;align-items:center;padding:12px 14px;
+  border-bottom:1px solid var(--border-default)}
 .trow:last-child{border-bottom:none}
-.pname{width:75px;font-weight:700;font-size:15px;color:var(--brand-primary)}
-.tval{flex:1;font-size:14px;font-weight:500;color:var(--text-body)}
+.pname{font-weight:700;font-size:15px;color:var(--brand-primary);min-width:0;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.tval{font-size:14px;font-weight:500;color:var(--text-body);min-width:0}
 .bell{width:34px;height:34px;border-radius:12px;border:none;cursor:pointer;display:flex;align-items:center;
   justify-content:center;position:relative}
 .notice{display:flex;align-items:center;gap:10px;background:var(--gold-100);border:1.5px solid #e8d3a8;
   border-radius:14px;padding:12px 14px;margin-top:14px}
 .notice .t{font-size:12.5px;color:var(--text-body);line-height:1.4}
-.mhead{display:flex;align-items:center;padding:9px 12px;background:var(--bg-sunken);
-  border-bottom:1px solid var(--border-default);font-size:9.5px;font-weight:700;letter-spacing:.06em;
-  text-transform:uppercase;color:var(--text-muted)}
-.mrow{display:flex;align-items:center;padding:9px 12px;border-bottom:1px solid var(--border-default)}
+.mhead{display:grid;grid-template-columns:38px repeat(5,1fr);gap:4px;align-items:center;padding:9px 12px;
+  background:var(--bg-sunken);border-bottom:1px solid var(--border-default);font-size:9.5px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted)}
+.mrow{display:grid;grid-template-columns:38px repeat(5,1fr);gap:4px;align-items:center;padding:9px 12px;
+  border-bottom:1px solid var(--border-default)}
+.mhead>div,.mrow>div{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .title{font-weight:800;font-size:20px;color:var(--text-heading)}
 .sub{font-size:12.5px;color:var(--text-muted)}
 .rcard{background:var(--surface-card);border:1.5px solid var(--border-default);border-radius:16px;
@@ -91,6 +96,13 @@ button{font-family:inherit}
 .lead{flex:1;min-height:34px;border-radius:10px;border:1.5px solid var(--border-default);background:#fff;
   color:var(--text-muted);font-size:12px;font-weight:700;cursor:pointer}
 .lead.sel{border-color:var(--brand-primary);background:var(--teal-100);color:var(--teal-700)}
+.stepper{display:flex;align-items:center;gap:8px;margin-top:12px}
+.stepbtn{width:44px;height:38px;border-radius:10px;border:1.5px solid var(--border-strong);background:#fff;
+  color:var(--brand-primary);font-size:22px;font-weight:700;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;line-height:1;flex:none}
+.stepbtn:disabled{opacity:.4;cursor:default;color:var(--text-faint);border-color:var(--border-default)}
+.stepval{flex:1;text-align:center;min-height:38px;display:flex;align-items:center;justify-content:center;
+  border-radius:10px;background:var(--teal-100);color:var(--teal-700);font-size:13px;font-weight:700}
 .obtn{flex:1;min-height:38px;display:flex;align-items:center;justify-content:center;border-radius:11px;
   border:1.5px solid var(--border-strong);background:#fff;color:var(--brand-primary);font-size:12.5px;font-weight:700}
 .tabbar{display:flex;justify-content:space-around;align-items:center;padding:10px 8px calc(16px + env(safe-area-inset-bottom));
@@ -155,6 +167,14 @@ const MOSQUE = {
   ],
   madrasah: 'Monday to Thursday, 5:00 PM – 7:00 PM. Boys and girls, ages 5–14. Enrolment at the office.'
 };
+
+/* The times the mosque publishes on Mawaqit are the Iqamah (jama'ah) times.
+   Adhan is shown this many minutes BEFORE the Iqamah. Change per prayer if needed. */
+const ADHAN_BEFORE = { fajr:5, dhuhr:5, asr:5, maghrib:5, isha:5 };
+
+/* Nudge the Islamic date to match the mosque's Mawaqit page.
+   +1 makes it match Mawaqit currently; change if it ever drifts by a day. */
+const HIJRI_OFFSET_DAYS = 1;
 
 /* ---------- tiny SVG icons (Lucide-style, currentColor) ---------- */
 const ICON = {
@@ -359,10 +379,16 @@ function todayRows(date){
     { key:'maghrib', name:'Maghrib', adhan:e.adhan.maghrib, iqamah:e.iq.maghrib },
     { key:'isha',    name:'Isha',    adhan:e.adhan.isha,    iqamah:e.iq.isha }
   ];
+  // Mosque publishes Iqamah (jama'ah) times; show Adhan a few minutes before.
+  rows.forEach(r=>{
+    if(r.noAlert) return;                    // Shurooq: leave as sunrise
+    if(r.iqamah!=null) r.adhan = r.iqamah - (ADHAN_BEFORE[r.key] || 5);
+  });
   if(isFri){
     const jumuaAdhan = hmToMin(timetable && timetable.jumua) ?? (13*60+15);
     const jumua2 = hmToMin(timetable && timetable.jumua2);
     const idx = rows.findIndex(r=>r.key==='dhuhr');
+    // Jumu'ah: khutbah/adhan time in the Adhan column, jama'ah in Iqamah.
     rows[idx] = { key:'dhuhr', name:"Jumu'ah", adhan:jumuaAdhan,
                   iqamah:(jumua2 ?? (jumuaAdhan+30)), isFri:true };
   }
@@ -438,7 +464,7 @@ function render(){
   pill.innerHTML = ICON.bell + '<span>'+(on?'Alerts on':'All muted')+'</span>';
   // date strip
   $('#dateG').textContent = now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
-  $('#dateH').textContent = hijriFromJD(toJD(now));
+  $('#dateH').textContent = hijriFromJD(toJD(now) + HIJRI_OFFSET_DAYS);
   setBanner();
 
   const scroll = $('#scroll');
@@ -502,12 +528,12 @@ function renderToday(now){
 
   // prayer table
   const card = el('<div class="card"></div>');
-  card.appendChild(el('<div class="thead"><div style="width:78px">Prayer</div><div style="flex:1">Adhan</div><div style="flex:1">Iqamah</div><div style="width:34px;text-align:right">Alert</div></div>'));
+  card.appendChild(el('<div class="thead"><div>Prayer</div><div>Adhan</div><div>Iqamah</div><div style="text-align:right">Alert</div></div>'));
   list.forEach(p=>{
     const active = p.key===currentKey;
     const alertOn = !p.noAlert && isOn(p.key);
     const row = el('<div class="trow" style="background:'+(active?'var(--surface-card-active)':'transparent')+';border-left:3px solid '+(active?'var(--brand-primary)':'transparent')+'"></div>');
-    row.appendChild(el('<div class="pname" style="width:75px;font-weight:'+(active?800:700)+';color:'+(active?'var(--text-heading)':'var(--brand-primary)')+'">'+p.name+'</div>'));
+    row.appendChild(el('<div class="pname" style="font-weight:'+(active?800:700)+';color:'+(active?'var(--text-heading)':'var(--brand-primary)')+'">'+p.name+'</div>'));
     row.appendChild(el('<div class="tval">'+fmt(p.adhan)+'</div>'));
     row.appendChild(el('<div class="tval">'+(p.iqamah!=null?fmt(p.iqamah):'—')+'</div>'));
     if(p.noAlert){
@@ -540,7 +566,7 @@ function renderMonth(now){
   const c = el('<div class="gut"></div>');
   c.appendChild(el('<div class="sub" style="margin-bottom:10px">'+monthLabel+' · Iqamah times. Adhan times are on Today.</div>'));
   const card = el('<div class="card" style="border-radius:16px"></div>');
-  card.appendChild(el('<div class="mhead"><div style="width:40px">Day</div><div style="flex:1;text-align:center">Fajr</div><div style="flex:1;text-align:center">Dhuhr</div><div style="flex:1;text-align:center">Asr</div><div style="flex:1;text-align:center">Mag</div><div style="flex:1;text-align:center">Isha</div></div>'));
+  card.appendChild(el('<div class="mhead"><div>Day</div><div style="text-align:center">Fajr</div><div style="text-align:center">Dhuhr</div><div style="text-align:center">Asr</div><div style="text-align:center">Mag</div><div style="text-align:center">Isha</div></div>'));
   for(let d=1; d<=daysInMonth; d++){
     const dt=new Date(y,mo,d);
     const e=getDay(dt);
@@ -548,9 +574,9 @@ function renderMonth(now){
     const fri=dt.getDay()===5;
     const bg = isToday?'var(--surface-card-active)':(fri?'var(--gold-100)':'transparent');
     const row=el('<div class="mrow" style="background:'+bg+'"></div>');
-    row.appendChild(el('<div style="width:40px;font-size:11.5px;font-weight:'+(isToday?800:600)+';color:'+(isToday?'var(--teal-700)':'var(--text-muted)')+'">'+d+' '+dow[dt.getDay()]+'</div>'));
+    row.appendChild(el('<div style="font-size:11.5px;font-weight:'+(isToday?800:600)+';color:'+(isToday?'var(--teal-700)':'var(--text-muted)')+'">'+d+' '+dow[dt.getDay()]+'</div>'));
     ['fajr','dhuhr','asr','maghrib','isha'].forEach(k=>{
-      row.appendChild(el('<div style="flex:1;text-align:center;font-size:11.5px;font-weight:500;color:var(--text-body)">'+fmt(e.iq[k],24)+'</div>'));
+      row.appendChild(el('<div style="text-align:center;font-size:11.5px;font-weight:500;color:var(--text-body)">'+fmt(e.iq[k],24)+'</div>'));
     });
     card.appendChild(row);
   }
@@ -600,13 +626,15 @@ function renderAlerts(now){
     top.appendChild(el('<div style="flex:1"><div style="font-weight:700;font-size:15px;color:var(--text-heading)">'+p.name+'</div><div class="sub" style="margin-top:2px">Adhan '+fmt(p.adhan)+' · '+leadHint+'</div></div>'));
     top.appendChild(switchEl(on, v=>{ settings.muted[p.key]=!v; saveSettings(); scheduleNotifications(); render(); }, p.name+' notifications'));
     card.appendChild(top);
-    const chips=el('<div style="display:flex;gap:8px;margin-top:12px"></div>');
-    [[0,'On time'],[5,'5 min'],[10,'10 min'],[15,'15 min']].forEach(([v,label])=>{
-      const b=el('<button class="lead '+(lead===v?'sel':'')+'">'+label+'</button>');
-      b.onclick=()=>{ settings.leads[p.key]=v; saveSettings(); scheduleNotifications(); render(); };
-      chips.appendChild(b);
-    });
-    card.appendChild(chips);
+    const stepper=el('<div class="stepper"></div>');
+    const minus=el('<button class="stepbtn" aria-label="Less lead time">&minus;</button>');
+    const val=el('<div class="stepval">'+(lead===0?'On time':lead+' min before')+'</div>');
+    const plus=el('<button class="stepbtn" aria-label="More lead time">+</button>');
+    minus.disabled = lead<=0; plus.disabled = lead>=30;
+    minus.onclick=()=>{ settings.leads[p.key]=Math.max(0,(settings.leads[p.key]||0)-5); saveSettings(); scheduleNotifications(); render(); };
+    plus.onclick =()=>{ settings.leads[p.key]=Math.min(30,(settings.leads[p.key]||0)+5); saveSettings(); scheduleNotifications(); render(); };
+    stepper.appendChild(minus); stepper.appendChild(val); stepper.appendChild(plus);
+    card.appendChild(stepper);
     listWrap.appendChild(card);
   });
   c.appendChild(listWrap);
