@@ -38,6 +38,9 @@ jobs:
       - name: Sync web assets into the native project
         run: npx cap sync android
 
+      - name: Generate app icon and splash from assets/
+        run: npx @capacitor/assets generate --android
+
       - name: Build debug APK
         working-directory: android
         run: |
