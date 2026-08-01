@@ -62,14 +62,13 @@ button{font-family:inherit}
 .hero .rem{font-size:28px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
 .card{background:var(--surface-card);border:1.5px solid var(--border-default);border-radius:18px;
   box-shadow:var(--shadow-card);overflow:hidden}
-.thead{display:grid;grid-template-columns:68px 1fr 1fr 34px;gap:8px;align-items:center;padding:10px 14px;
+.thead{display:grid;grid-template-columns:72px 1fr 1fr 34px;gap:8px;align-items:center;padding:10px 14px;
   background:var(--bg-sunken);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
   color:var(--text-muted);border-bottom:1px solid var(--border-default)}
-.trow{display:grid;grid-template-columns:68px 1fr 1fr 34px;gap:8px;align-items:center;padding:12px 14px;
+.trow{display:grid;grid-template-columns:72px 1fr 1fr 34px;gap:8px;align-items:center;padding:12px 14px;
   border-bottom:1px solid var(--border-default)}
 .trow:last-child{border-bottom:none}
-.pname{font-weight:700;font-size:15px;color:var(--brand-primary);min-width:0;overflow:hidden;
-  text-overflow:ellipsis;white-space:nowrap}
+.pname{font-weight:700;font-size:15px;color:var(--brand-primary);min-width:0;white-space:nowrap}
 .tval{font-size:14px;font-weight:500;color:var(--text-body);min-width:0}
 .bell{width:34px;height:34px;border-radius:12px;border:none;cursor:pointer;display:flex;align-items:center;
   justify-content:center;position:relative}
@@ -172,6 +171,11 @@ const MOSQUE = {
    Adhan is shown this many minutes BEFORE the Iqamah. Change per prayer if needed. */
 const ADHAN_BEFORE = { fajr:5, dhuhr:5, asr:5, maghrib:5, isha:5 };
 
+/* Optional relay (Cloudflare Worker) that fetches Mawaqit server-side and returns
+   the confData JSON with CORS headers. Fill this in with your Worker URL to make
+   times load reliably in the browser/PWA. Leave '' to fetch Mawaqit directly. */
+const RELAY_URL = 'https://baitussalam-times.robloxdude009.workers.dev/';
+
 /* Nudge the Islamic date to match the mosque's Mawaqit page.
    +1 makes it match Mawaqit currently; change if it ever drifts by a day. */
 const HIJRI_OFFSET_DAYS = 1;
@@ -256,16 +260,17 @@ function extractConfData(html){
 }
 
 async function fetchPage(url){
-  // Native (Capacitor) — bypasses browser CORS.
-  const CapHttp = (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.CapacitorHttp)
-                || window.CapacitorHttp;
-  if(CapHttp){
-    const res = await CapHttp.get({ url, headers:{'User-Agent':'BaitussalamApp'} });
+  const Cap = window.Capacitor;
+  const CapHttp = (Cap && Cap.Plugins && Cap.Plugins.CapacitorHttp) || window.CapacitorHttp;
+  const native = Cap && Cap.isNativePlatform && Cap.isNativePlatform();
+  // Native (Capacitor) — bypasses browser CORS via native HTTP.
+  if(CapHttp && native){
+    const res = await CapHttp.get({ url, headers:{'User-Agent':'Mozilla/5.0 BaitussalamApp'} });
     return typeof res.data === 'string' ? res.data : JSON.stringify(res.data);
   }
   // Browser — try direct, then a public CORS proxy as a best-effort fallback.
   try{
-    const r = await fetch(url, { mode:'cors' });
+    const r = await fetch(url);
     if(r.ok) return await r.text();
     throw new Error('status '+r.status);
   }catch(e){
@@ -321,8 +326,14 @@ async function syncTimetable(force){
     return;
   }
   try{
-    const html = await fetchPage(MOSQUE.url);
-    const conf = JSON.parse(extractConfData(html));
+    let conf;
+    if(RELAY_URL){
+      const txt = await fetchPage(RELAY_URL);   // relay returns confData JSON directly
+      conf = JSON.parse(txt);
+    } else {
+      const html = await fetchPage(MOSQUE.url);
+      conf = JSON.parse(extractConfData(html));
+    }
     const norm = normalize(conf);
     // sanity: must have at least today's data
     const t = dayEntryFrom(norm, new Date());
@@ -440,9 +451,33 @@ function computeNext(date, rows){
   else { next = timed[0]; target.setDate(target.getDate()+1); target.setHours(Math.floor(next.adhan/60), next.adhan%60,0,0); }
   const diff = Math.max(0, Math.floor((target-date)/1000));
   const remaining = pad(Math.floor(diff/3600))+':'+pad(Math.floor(diff/60)%60)+':'+pad(diff%60);
-  let currentKey=null;
-  timed.forEach(r=>{ if(r.adhan!=null && r.adhan<=nowMins) currentKey=r.key; });
+  const shuRow = rows.find(r=>r.key==='shurooq');
+  const currentKey = computeHighlight(nowMins, timed, shuRow ? shuRow.adhan : null);
   return { next, remaining, currentKey };
+}
+
+// The highlighted prayer = the one whose time window contains "now".
+// Fajr's window ends at Shurooq (sunrise), so after sunrise the highlight
+// moves on to the next prayer (Dhuhr) even before its adhan. Isha runs
+// overnight until Fajr.
+function computeHighlight(nowMins, timed, shu){
+  const t = {}; timed.forEach(r=> t[r.key] = r.adhan);
+  const order = ['fajr','dhuhr','asr','maghrib','isha'];
+  // After midnight, before today's Fajr: still Isha's window.
+  if(t.fajr!=null && nowMins < t.fajr) return 'isha';
+  const ends = {
+    fajr: (shu!=null ? shu : t.dhuhr),
+    dhuhr: t.asr, asr: t.maghrib, maghrib: t.isha
+  };
+  for(const k of order){
+    const start = t[k];
+    if(start==null) continue;
+    if(k==='isha'){ if(nowMins>=start) return 'isha'; }
+    else { const end=ends[k]; if(end!=null && nowMins>=start && nowMins<end) return k; }
+  }
+  // In the gap between sunrise and Dhuhr: highlight the next upcoming prayer.
+  const up = order.map(k=>({k,a:t[k]})).filter(x=>x.a!=null && x.a>nowMins).sort((a,b)=>a.a-b.a)[0];
+  return up ? up.k : 'isha';
 }
 
 function isOn(k){ return settings.notifOn && !settings.muted[k]; }
@@ -476,6 +511,22 @@ function render(){
 
   renderTabbar();
   wire();
+  fitNames();
+}
+
+// Shrink any prayer name that would overflow its column, so long names
+// like "Maghrib"/"Shurooq" stay whole (no ellipsis, no overlap).
+function fitNames(){
+  document.querySelectorAll('.pname').forEach(elm=>{
+    let size = 15;
+    elm.style.fontSize = size + 'px';
+    let guard = 0;
+    while(elm.scrollWidth > elm.clientWidth + 0.5 && size > 10.5 && guard < 14){
+      size -= 0.5;
+      elm.style.fontSize = size + 'px';
+      guard++;
+    }
+  });
 }
 function toJD(d){
   let day=d.getDate(), m=d.getMonth()+1, y=d.getFullYear();
